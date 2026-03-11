@@ -34,17 +34,33 @@
         public async Task<StartSessionResponseDto> StartSessionAsync(StartSessionRequestDto request)
         {
             var correlationId = Guid.NewGuid().ToString();
+            var cacheKey = $"session:{request.PlayerId}:{request.GameId}";
 
             await _sessionLock.WaitAsync();
             try
             {
+                if (_cache.TryGetValue(cacheKey, out GameSession cachedSession))
+                {
+                    _logger.LogInformation("Session retrieved from cache. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}",
+                        correlationId, cachedSession.PlayerId, cachedSession.SessionId);
+
+                    return new StartSessionResponseDto
+                    {
+                        SessionId = cachedSession.SessionId,
+                        StartedAt = cachedSession.StartedAt,
+                        Status = cachedSession.Status
+                    };
+                }
+
                 var existing = await _repository.GetByPlayerAndGameAsync(request.PlayerId, request.GameId);
 
                 if (existing != null)
                 {
+                    _cache.Set(cacheKey, existing, TimeSpan.FromSeconds(60));
+
                     _logger.LogInformation(
-                        "Duplicate session found. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}",
-                        correlationId, existing.PlayerId, existing.SessionId
+                        "Existing session returned. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}, FromCache={FromCache}",
+                        correlationId, existing.PlayerId, existing.SessionId, false
                     );
 
                     return new StartSessionResponseDto
@@ -65,6 +81,8 @@
                 };
 
                 await _repository.AddSessionAsync(newSession);
+
+                _cache.Set(cacheKey, newSession, TimeSpan.FromSeconds(60));
 
                 _logger.LogInformation("Session started. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}",
                                        correlationId, newSession.PlayerId, newSession.SessionId);
