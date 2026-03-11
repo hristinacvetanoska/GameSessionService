@@ -21,9 +21,34 @@
             _logger = logger;
         }
 
-        public async Task<StartSessionResponse> StartSessionAsync(StartSessionRequestDto request)
+        public StartSessionResponseDto StartSession(StartSessionRequestDto request)
         {
-            var session = new GameSession
+            var correlationId = Guid.NewGuid().ToString();
+
+            //check if there is an active session for the same player and game
+            var existing = _repository.GetAllSessions()
+                .FirstOrDefault(x => x.PlayerId == request.PlayerId
+                                  && x.GameId == request.GameId
+                                  && x.Status == "Active");
+
+            if (existing != null)
+            {
+                _logger.LogInformation(
+                    "Duplicate session found. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}",
+                    correlationId, existing.PlayerId, existing.SessionId
+                );
+
+                //Return existing session details instead of creating a new one
+                return new StartSessionResponseDto
+                {
+                    SessionId = existing.SessionId,
+                    StartedAt = existing.StartedAt,
+                    Status = existing.Status
+                };
+            }
+
+            //Create new session
+            var newSession = new GameSession
             {
                 SessionId = Guid.NewGuid().ToString(),
                 PlayerId = request.PlayerId,
@@ -32,31 +57,41 @@
                 Status = "Active"
             };
 
-            await _repository.SaveAsync(session);
+            _repository.TryAddSession(newSession);
 
-            _logger.LogInformation("Session started {SessionId} for player {PlayerId}",
-                session.SessionId, session.PlayerId);
+            _logger.LogInformation("Session started. CorrelationId={CorrelationId}, PlayerId={PlayerId}, SessionId={SessionId}",
+                                   correlationId, newSession.PlayerId, newSession.SessionId);
 
-            return new StartSessionResponse
+            return new StartSessionResponseDto
             {
-                SessionId = session.SessionId,
-                StartedAt = session.StartedAt,
-                Status = session.Status
+                SessionId = newSession.SessionId,
+                StartedAt = newSession.StartedAt,
+                Status = newSession.Status
             };
         }
 
-        public async Task<(GameSession? gameSession, bool fromCache)> GetSessionAsync(string sessionId)
+        public (GameSession? gameSession, bool fromCache) GetSession(string sessionId)
         {
+            var correlationId = Guid.NewGuid().ToString();
+
             if (_cache.TryGetValue(sessionId, out GameSession cached))
             {
+                _logger.LogInformation(
+                    "Session retrieved from cache. CorrelationId={CorrelationId}, SessionId={SessionId}",
+                    correlationId, cached.SessionId
+                );
                 return (cached, true);
             }
 
-            var session = await _repository.GetByIdAsync(sessionId);
+            var session = _repository.GetById(sessionId);
 
             if (session != null)
             {
                 _cache.Set(sessionId, session, TimeSpan.FromSeconds(60));
+                _logger.LogInformation(
+                    "Session retrieved from repository and cached. CorrelationId={CorrelationId}, SessionId={SessionId}",
+                    correlationId, session.SessionId
+                );
             }
 
             return (session, false);

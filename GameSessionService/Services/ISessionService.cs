@@ -5,7 +5,7 @@
 
     public interface ISessionService
     {
-        Task<StartSessionResponse> StartSessionAsync(StartSessionRequestDto request);
-        Task<(GameSession? gameSession, bool fromCache)> GetSessionAsync(string sessionId);
+        StartSessionResponseDto StartSession(StartSessionRequestDto request);
+        (GameSession? gameSession, bool fromCache) GetSession(string sessionId);
     }
 }

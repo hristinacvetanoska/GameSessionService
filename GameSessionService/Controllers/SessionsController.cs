@@ -19,14 +19,14 @@ namespace GameSessionService.Controllers
         [HttpPost("start")]
         public async Task<IActionResult> StartSession(StartSessionRequestDto request)
         {
-            var result = await _service.StartSessionAsync(request);
+            var result =  _service.StartSession(request);
             return Ok(result);
         }
 
         [HttpGet("{sessionId}")]
         public async Task<IActionResult> GetSession(string sessionId)
         {
-            var result = await _service.GetSessionAsync(sessionId);
+            var result =  _service.GetSession(sessionId);
 
             if (result.gameSession == null)
                 return NotFound();
