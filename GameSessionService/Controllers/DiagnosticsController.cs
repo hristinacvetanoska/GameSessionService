@@ -4,6 +4,9 @@
     using Microsoft.AspNetCore.Mvc;
     using System.Diagnostics;
 
+    /// <summary>
+    /// Provides diagnostic endpoints for performance testing.
+    /// </summary>
     [ApiController]
     [Route("diagnostics")]
     public class DiagnosticsController : ControllerBase
@@ -17,6 +20,12 @@
             _logger = logger;
         }
 
+        /// <summary>
+        /// Runs a performance test by calling GetSession multiple times.
+        /// Measures total and average execution time.
+        /// </summary>
+        /// <param name="iterations">Number of repeated calls (default 1000).</param>
+        /// <returns>Timing summary: total ms, average ms, iterations.</returns>
         [HttpGet("perf-test")]
         public async Task<IActionResult> PerfTest(int iterations = 1000)
         {
@@ -26,7 +35,7 @@
 
             for (int i = 0; i < iterations; i++)
             {
-                _service.GetSession("test-session");
+               await _service.GetSessionAsync("test-session");
             }
 
             sw.Stop();
@@ -38,8 +47,8 @@
             return Ok(new
             {
                 Iterations = iterations,
-                TotalMs = sw.ElapsedMilliseconds, // total time in ms for all iterations
-                AvgMs = sw.ElapsedMilliseconds / (double)iterations // average time per call
+                TotalMs = sw.ElapsedMilliseconds,
+                AvgMs = sw.ElapsedMilliseconds / (double)iterations
             });
         }
     }

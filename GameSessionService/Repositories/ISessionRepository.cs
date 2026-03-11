@@ -2,27 +2,33 @@
 {
     using GameSessionService.Models;
 
+    /// <summary>
+    /// Interface for managing game sessions. 
+    /// This repository provides methods to add new game sessions, 
+    /// retrieve a session by its unique ID, and get all active sessions.
+    /// </summary>
     public interface ISessionRepository
     {
-        /// <summary>
-        /// Adds a new GameSession to the repository.
-        /// </summary>
-        /// <param name="session">The game session.</param>
-        /// <returns> Returns true if the session was added successfully, or false if a session with the same SessionId already exists.</returns>
-        bool TryAddSession(GameSession session);
-        //Task SaveAsync(GameSession session);
 
         /// <summary>
-        /// Gets a GameSession by its sessionId.
+        /// Adds a new GameSession to the database.
         /// </summary>
-        /// <param name="sessionId"></param>
-        /// <returns>Returns the GameSession with the specified sessionId, or null if not found.</returns>
-        GameSession? GetById(string sessionId);
+        /// <param name="session">The game session.</param>
+        /// <returns>Returns the newly created game session.</returns>
+        Task<GameSession> AddSessionAsync(GameSession session);
+
+
+        /// <summary>
+        /// Gets a game session by its unique session ID.
+        /// </summary>
+        /// <param name="sessionId">The game session Id.</param>
+        /// <returns>Returns a game session.</returns>
+        Task<GameSession?> GetByIdAsync(string sessionId);
 
         /// <summary>
         /// Gets all active GameSessions. Active sessions are those that have a status of "Active".
         /// </summary>
-        /// <returns> Returns a list of all active GameSessions.</returns>
-        IEnumerable<GameSession> GetAllSessions();
+        /// <returns>Returns all active game sessions.</returns>
+        Task<IEnumerable<GameSession>> GetAllSessionsAsync();
     }
 }
