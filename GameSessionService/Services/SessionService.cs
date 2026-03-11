@@ -38,9 +38,7 @@
             await _sessionLock.WaitAsync();
             try
             {
-                var existingSessions = await _repository.GetAllSessionsAsync();
-                var existing = existingSessions.FirstOrDefault(x => x.PlayerId == request.PlayerId
-                                                                  && x.GameId == request.GameId);
+                var existing = await _repository.GetByPlayerAndGameAsync(request.PlayerId, request.GameId);
 
                 if (existing != null)
                 {

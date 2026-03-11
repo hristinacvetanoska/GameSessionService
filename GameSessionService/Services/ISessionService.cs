@@ -31,5 +31,6 @@
         /// <param name="sessionId">The Session Id.</param>
         /// <returns>Tuple: gameSession (null if not found), fromCache (true if from cache).</returns>
         Task<(GameSession? gameSession, bool fromCache)> GetSessionAsync(string sessionId);
+
     }
 }

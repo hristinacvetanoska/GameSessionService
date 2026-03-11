@@ -41,8 +41,8 @@ namespace GameSessionService.Tests
             };
 
             _repositoryMock
-                .Setup(r => r.GetAllSessionsAsync())
-                .ReturnsAsync(new List<GameSession>());
+                .Setup(r => r.GetByPlayerAndGameAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync((GameSession?)null);
 
             _repositoryMock
                 .Setup(r => r.AddSessionAsync(It.IsAny<GameSession>()))
@@ -69,8 +69,8 @@ namespace GameSessionService.Tests
             };
 
             _repositoryMock
-                .Setup(r => r.GetAllSessionsAsync())
-                .ReturnsAsync(new List<GameSession> { existing });
+                .Setup(r => r.GetByPlayerAndGameAsync("P123", "G100"))
+                .ReturnsAsync(existing);
 
             var request = new StartSessionRequestDto
             {
@@ -139,8 +139,11 @@ namespace GameSessionService.Tests
             var sessions = new List<GameSession>();
 
             _repositoryMock
-                .Setup(r => r.GetAllSessionsAsync())
-                .ReturnsAsync(() => sessions);
+                .Setup(r => r.GetByPlayerAndGameAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(() =>
+                {
+                    return sessions.FirstOrDefault();
+                });
 
             _repositoryMock
                 .Setup(r => r.AddSessionAsync(It.IsAny<GameSession>()))

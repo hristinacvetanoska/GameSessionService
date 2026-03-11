@@ -26,9 +26,12 @@
         Task<GameSession?> GetByIdAsync(string sessionId);
 
         /// <summary>
-        /// Gets all active GameSessions. Active sessions are those that have a status of "Active".
+        /// Gets a game session by player ID and game ID. 
+        /// This method is useful for retrieving an active session for a specific player and game combination.
         /// </summary>
-        /// <returns>Returns all active game sessions.</returns>
-        Task<IEnumerable<GameSession>> GetAllSessionsAsync();
+        /// <param name="playerId">The player id.</param>
+        /// <param name="gameId">The game id.</param>
+        /// <returns>Returns game session.</returns>
+        Task<GameSession?> GetByPlayerAndGameAsync(string playerId, string gameId);
     }
 }
