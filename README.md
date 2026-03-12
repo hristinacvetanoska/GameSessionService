@@ -43,9 +43,9 @@ A simple .NET 8 Web API to manage game sessions with caching and concurrency saf
 **Sample Response:**
 ```json
 {
-  "Iterations": 1000,
-  "TotalMs": 1200,
-  "AvgMs": 1.2
+  "iterations": 1000,
+  "totalMs": 5319,
+  "avgMs": 5.319
 }
 ```
 **Tech Stack**
